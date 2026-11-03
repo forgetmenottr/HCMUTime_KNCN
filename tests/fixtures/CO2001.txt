@@ -1,0 +1,16 @@
+STT		Mã MH	Tên MH	Số tín chỉ	BB/TC	
+1		CO2001	Kỹnăng chnghiệp cho kỹsư	3.0		
+CO2001 - Kỹnăng chnghiệp cho kỹsư
+Nhóm lớp	DK/ Sĩ số	Ngôn ngữ	Nhóm LT	Giảng viên	Nhóm BT	Giảng viên BT/TN	Sĩ số LT	#
+A01	25/80	V	A01				80	
+Thứ	Tiết	Phòng	CS	BT/TN	Tuần học
+Thứ 3	- - - - - - - 8 9 - - - - - - -	B4-502	1		1234567-90123456--------------
+CC01	51/80	TA	CC01				80	
+Thứ	Tiết	Phòng	CS	BT/TN	Tuần học
+Thứ 3	- 2 3 - - - - - - - - - - - - -	B4-502	1		1234567-90123456--------------
+CC02	66/80	TA	CC02				80	
+Thứ	Tiết	Phòng	CS	BT/TN	Tuần học
+Thứ 3	- - - 4 5 - - - - - - - - - - -	B4-501	1		1234567-90123456--------------
+L01	120/120	V	L01	"Chưa/Đang phân công"			120	
+Thứ	Tiết	Phòng	CS	BT/TN	Tuần học
+Thứ 6	- - - - - - - - - 10 11 - - - - -	H6-405	2		1234567-90123456--------------
