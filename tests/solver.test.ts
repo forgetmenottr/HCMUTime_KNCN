@@ -448,7 +448,7 @@ describe("programs (chuong trinh)", () => {
   it("names the other blocking requirements separately from the program one", () => {
     const result = solve(ALL, prefs((p) => {
       p.programs = { mode: "required", allowed: ["L"] };
-      p.language = { mode: "required", allowed: ["TA"] }; // no fixture group is TA
+      p.language = { mode: "required", allowed: ["TA"] }; // no SK2001 group is TA (the CO courses do have TA groups)
     }));
     const codes = result.diagnosticDetails.filter((d) => d.params.course === "SK2001").map((d) => d.code);
     expect(codes).toEqual(["course-no-program", "course-blocked"]);

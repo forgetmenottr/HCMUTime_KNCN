@@ -14,13 +14,13 @@ export const PROGRAM_CODES = ["L", "A", "CC", "TN"] as const;
 
 /** Vietnamese name of each known program code. */
 export const PROGRAM_LABELS: Record<string, string> = {
-  L: "Mainstream Program",
-  A: "PFIEV Program / Japan-Oriented Program",
-  CC: "Advanced Program (English-taught)",
-  TN: "Talented-Student Program",
+  L: "Đại trà",
+  A: "Việt–Pháp (PFIEV) / Định hướng Nhật Bản",
+  CC: "Chất lượng cao",
+  TN: "Tài năng",
 };
 
 /** Name of a program code; anything unknown (or an empty prefix) is "Khác". */
 export function programLabel(code: string): string {
-  return PROGRAM_LABELS[code] ?? "Others";
+  return PROGRAM_LABELS[code] ?? "Khác";
 }
