@@ -109,6 +109,10 @@ export function parse(text: string): ParseResult {
   });
 
   attachCredits(state);
+  if (state.courses.length === 0) {
+    // Empty input, or text with no course header at all: say so once, for the whole input.
+    warn(state, 0, "", issue("no-courses-found", "no course found in the input"));
+  }
   return { courses: state.courses, warnings: state.warnings };
 }
 

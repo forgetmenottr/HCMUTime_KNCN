@@ -64,13 +64,14 @@ export const PARSE_WARNING_CODES = [
   "week-digit-mismatch",
   "unknown-campus",
   "no-teaching-week",
+  "no-courses-found",
 ] as const;
 export type ParseWarningCode = (typeof PARSE_WARNING_CODES)[number];
 
 export interface ParseWarning {
-  /** 1-based line number in the original input. */
+  /** 1-based line number in the original input; 0 for a warning about the whole input. */
   line: number;
-  /** The offending line, trimmed. */
+  /** The offending line, trimmed ("" when `line` is 0). */
   text: string;
   /** English description (kept for compatibility; the UI translates `code`). */
   message: string;

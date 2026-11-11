@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parse, type Course } from "../src/lib/parser";
 import { buildMasks, conflicts, type IndexedCourse, type IndexedGroup } from "../src/lib/timing";
-import { programOf } from "../src/lib/parser";
+import { PROGRAM_CODES, programOf } from "../src/lib/parser";
 import {
   applyConstraints,
   CONSTRAINTS,
@@ -213,6 +213,51 @@ describe("solve matches the brute-force reference (CO2007 + CO2011)", () => {
     const p = { ...base, topK: 10_000 };
     const result = solve(BOTH, p);
     expect(ranking(result)).toEqual(bruteForce(BOTH, p));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The exact Preferences object the Preferences screen (step 3) sends; see
+// docs/ui-change-analysis.md. The screen hides campus, language and lecturer
+// (sent "off" with their default lists) and forces two weights to 0. Those
+// settings must be inert: the result must still match the brute force, and
+// the zero-weight items must add nothing to any penalty.
+// ---------------------------------------------------------------------------
+
+/** What the step-3 screen sends for a student of `program`; other weights stay at their defaults. */
+function step3UiPreferences(program: string): Preferences {
+  return prefs((p) => {
+    p.programs = { mode: "required", allowed: [program] };
+    p.campuses = { mode: "off", allowed: [1, 2] };
+    p.language = { mode: "off", allowed: ["V", "TA"] };
+    p.avoidLecturers = { mode: "off", names: [] }; // names must stay empty, not just "off"
+    p.weights.compactDays = 0;
+    p.weights.noCampusSwitch = 0;
+    p.weights.preferredItems = 5;
+  });
+}
+
+describe("step-3 UI preferences payload", () => {
+  it("matches the brute-force reference for every program, and its hidden settings are inert", () => {
+    for (const program of PROGRAM_CODES) {
+      const p = step3UiPreferences(program);
+      const top = solve(BOTH, p);
+      expect(top.status, program).toBe("ok");
+      expect(top.relaxed, program).toEqual([]);
+      expect(ranking(top), program).toEqual(bruteForce(BOTH, p));
+
+      const all = { ...p, topK: 10_000 };
+      expect(ranking(solve(BOTH, all)), program).toEqual(bruteForce(BOTH, all));
+
+      for (const schedule of top.schedules) {
+        // Hidden constraints are off, so none can be reported as violated.
+        expect(schedule.violations, program).toEqual([]);
+        // The search penalty is made of the non-zero-weight items alone.
+        const weighted = schedule.breakdown.filter((b) => b.weight > 0);
+        expect(schedule.penalty, program).toBeCloseTo(weighted.reduce((sum, b) => sum + b.penalty, 0), 9);
+        for (const item of schedule.breakdown.filter((b) => b.weight === 0)) expect(item.penalty, program).toBe(0);
+      }
+    }
   });
 });
 

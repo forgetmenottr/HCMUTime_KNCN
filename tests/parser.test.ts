@@ -328,9 +328,23 @@ describe("derived edge cases", () => {
     });
   });
 
-  it("returns an empty result for empty input", () => {
-    expect(parse("")).toEqual({ courses: [], warnings: [] });
-    expect(parse(" \r\n\t\n ")).toEqual({ courses: [], warnings: [] });
+  it("returns no courses and one whole-input warning for empty input", () => {
+    const nothing = { line: 0, text: "", message: expect.any(String), code: "no-courses-found", params: {} };
+    expect(parse("")).toEqual({ courses: [], warnings: [nothing] });
+    expect(parse(" \r\n\t\n ")).toEqual({ courses: [], warnings: [nothing] });
+  });
+
+  it("emits no-courses-found only when nothing at all was parsed", () => {
+    // Unreadable text: the line warning first, then the whole-input warning, once.
+    const unreadable = parse(`${GARBAGE}\n${GARBAGE}`);
+    expect(unreadable.courses).toEqual([]);
+    expect(unreadable.warnings.map((w) => w.code)).toEqual(["unrecognized-line", "unrecognized-line", "no-courses-found"]);
+    // A course header alone is a course (with no groups), so there is no such warning.
+    expect(parse("CO2007 - Kiến trúc máy tính").warnings).toEqual([]);
+    // Every real fixture still parses with no warning at all.
+    for (const name of ["CO2001.txt", "CO2003.txt", "CO2007.txt", "CO2011.txt", "SK2001.txt", "SP1031.txt"]) {
+      expect(parse(fixture(name)).warnings, name).toEqual([]);
+    }
   });
 
   describe.each(LAYOUTS)("lecturer names ($name)", ({ apply }) => {
@@ -400,7 +414,9 @@ describe("derived edge cases", () => {
     // Lines 4-8 of CO2007: group-table header, A01_A01, session header, 2 sessions.
     const result = parse(linesOf(CO2007).slice(3, 8).join("\n"));
     expect(result.courses).toEqual([]);
-    expect(result.warnings.map((w) => w.line)).toEqual([2, 4, 5]);
+    // Lines 2, 4, 5 as above, then the whole-input warning (line 0) because no course was found.
+    expect(result.warnings.map((w) => w.line)).toEqual([2, 4, 5, 0]);
+    expect(result.warnings.at(-1)?.code).toBe("no-courses-found");
   });
 
   it("warns on a session line directly under a course header", () => {
@@ -418,7 +434,10 @@ describe("derived edge cases", () => {
         expect(() => parse(text.slice(0, cut))).not.toThrow();
       }
     }
-    expect(parse(undefined as unknown as string)).toEqual({ courses: [], warnings: [] });
+    expect(parse(undefined as unknown as string)).toEqual({
+      courses: [],
+      warnings: [{ line: 0, text: "", message: expect.any(String), code: "no-courses-found", params: {} }],
+    });
   });
 });
 
