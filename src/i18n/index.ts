@@ -1,10 +1,11 @@
 import { fill, list, MISSING, num, plural, runs, str } from "./format";
 import { en } from "./en";
 import { DEFAULT_LANG, isLang, type CodeSection, type Coded, type Dictionary, type Fmt, type Lang, type Message, type Params } from "./types";
-import { vi } from "./vi";
+import { vi, type UiKey } from "./vi";
 
 export * from "./types";
 export { MISSING } from "./format";
+export type { UiKey } from "./vi";
 
 export const TABLES: Readonly<Record<Lang, Dictionary>> = { vi, en };
 
@@ -139,7 +140,7 @@ export function label(constraint: unknown, lang: Lang = getLang()): string {
 }
 
 /** A static UI string; falls back to Vietnamese, then to the key itself. */
-export function ui(key: string, params: Params = {}, lang: Lang = getLang()): string {
+export function ui(key: UiKey, params: Params = {}, lang: Lang = getLang()): string {
   const own = render(entry(lang, "ui", key), params, lang);
   if (own !== null) return own;
   reportMissing(lang, "ui", key);

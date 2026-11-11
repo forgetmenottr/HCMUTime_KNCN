@@ -19,6 +19,7 @@ import {
   type Lang,
   type LangStore,
   type Section,
+  type UiKey,
 } from "../src/i18n";
 import { COMPLETE } from "../src/i18n/status";
 import { PARSE_WARNING_CODES } from "../src/lib/parser";
@@ -150,7 +151,6 @@ describe("i18n completeness", () => {
   it("never has a key that is not a real code, in any section, finished or not", () => {
     for (const lang of LANGS) {
       for (const section of Object.keys(TABLES[lang]) as Section[]) {
-        if (section === "ui") continue; // any key is allowed while UI strings are added
         const allowed = new Set(expectedKeys(section));
         for (const key of Object.keys(TABLES[lang][section])) expect(allowed.has(key), `${lang}.${section}.${key}`).toBe(true);
       }
@@ -258,7 +258,7 @@ describe("translate fallback chain", () => {
   it("labels an unknown constraint as itself and an unknown UI key as the key", () => {
     expect(label("not-a-constraint", "en")).toBe("not-a-constraint");
     expect(label(undefined, "vi")).toBe("?");
-    expect(ui("no.such.key", {}, "en")).toBe("no.such.key");
+    expect(ui("no.such.key" as UiKey, {}, "en")).toBe("no.such.key");
   });
 });
 
@@ -303,6 +303,81 @@ describe("constraint labels and data values", () => {
     expect(formatter("en").day(9)).toBe("9"); // out of range: the number, never blank
     const fmt = formatter("vi");
     expect(fmt.list(["partsOff", "freeSeats"], fmt.constraint)).toBe("Ngày/buổi nghỉ và Còn chỗ trống");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Vietnamese UI strings (stage 3)
+// ---------------------------------------------------------------------------
+
+/** One value for every slot a UI string uses; a slot missing here shows up as "?". */
+const UI_PARAMS = {
+  line: 12,
+  n: 3,
+  prefix: "XYZ",
+  from: 1,
+  to: 6,
+  p: 63,
+  v: 5,
+  course: "CO2007",
+  program: "L",
+  available: ["A", "CC"],
+  item: "partsOff",
+  courses: ["CO2007", "CO2011"],
+  list: ["A03_A03", "A05_A05"],
+  periods: [2, 3, 4],
+  weeks: [1, 2, 3, 5],
+  ms: 2340,
+};
+
+/** The only Vietnamese UI strings whose own text contains "?". */
+const LITERAL_QUESTION_MARK = new Set(["courses.creditsUnknown", "prefs.timeOfDay.label"]);
+
+describe("Vietnamese UI strings", () => {
+  const keys = Object.keys(TABLES.vi.ui) as UiKey[];
+
+  it("renders every key from its own table, with every slot filled", () => {
+    const misses: string[] = [];
+    setMissingHandler(({ section, key }) => misses.push(`${section}.${key}`));
+    for (const key of keys) {
+      const text = ui(key, UI_PARAMS, "vi");
+      expect(text.trim(), key).not.toBe("");
+      expect(text, key).not.toBe(key);
+      expect(text, key).not.toMatch(BAD_OUTPUT);
+      if (!LITERAL_QUESTION_MARK.has(key)) expect(text, key).not.toContain("?");
+    }
+    expect(misses).toEqual([]);
+  });
+
+  it("shows '?' rather than 'undefined' when a slot is not given", () => {
+    for (const key of keys) expect(ui(key, {}, "vi"), key).not.toMatch(BAD_OUTPUT);
+  });
+
+  it("names the constraint in a violation chip the way the control is named", () => {
+    expect(ui("results.violation", { item: "partsOff", courses: ["CO2007"] }, "vi")).toBe("Ngày/buổi nghỉ: CO2007");
+    expect(ui("results.violation", { item: "freeSeats", courses: ["CO2007", "CO2011"] }, "vi")).toBe("Còn chỗ trống: CO2007 và CO2011");
+  });
+
+  it("formats numbers, runs and lists the Vietnamese way", () => {
+    expect(ui("courses.totalCredits", { n: 10.5 }, "vi")).toBe("Tổng 10,5 tín chỉ");
+    expect(ui("courses.weeks", { weeks: [1, 2, 3, 4, 5, 6, 7, 9, 10] }, "vi")).toBe("Tuần 1–7, 9–10");
+    expect(ui("courses.periods", { periods: [8, 9] }, "vi")).toBe("Tiết 8–9");
+    expect(ui("results.noProgramWhy", { available: ["A", "CC"] }, "vi")).toBe("Môn này chỉ còn lớp của chương trình A và CC.");
+    // Alternatives are "either one", so they are not joined with "và".
+    expect(ui("results.alternatives", { list: ["A03_A03", "A05_A05"] }, "vi")).toBe("Cũng được: A03_A03, A05_A05");
+  });
+
+  it("states search time in seconds, never as '0 giây'", () => {
+    expect(ui("results.stats", { ms: 40 }, "vi")).toBe("Tìm trong chưa đầy 1 giây");
+    expect(ui("results.stats", { ms: 2340 }, "vi")).toBe("Tìm trong 2,3 giây");
+  });
+
+  it("keeps the mode names identical wherever a sentence refers to them", () => {
+    const preferred = ui("prefs.mode.preferred", {}, "vi");
+    for (const key of ["prefs.mode.preferredTip", "prefs.preferredSwitch.hint", "prefs.preferredSwitch.disabledTip", "prefs.preferredSwitch.paused"] as UiKey[]) {
+      expect(ui(key, {}, "vi"), key).toContain(preferred);
+    }
+    expect(ui("results.relaxedTitle", {}, "vi")).toContain(ui("prefs.mode.required", {}, "vi"));
   });
 });
 
