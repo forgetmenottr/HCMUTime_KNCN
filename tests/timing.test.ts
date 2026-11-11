@@ -331,6 +331,29 @@ describe("robustness", () => {
     expect(popcount(result!.courses[0].groups[0].mask)).toBe(65);
   });
 
+  it("gives slots-out-of-range and internal-overlap params the same session facts as the message", () => {
+    // Out of range: A01_A01's theory session (Mon 2-4, A4-409) gets period 17.
+    const outOfRange = editableCourses();
+    findGroup(outOfRange, "CO2007", "A01_A01").sessions[0].periods.push(17);
+    const [range] = buildMasks(outOfRange).warnings;
+    expect(range.params).toEqual({
+      session: 1, count: 15, day: 2, maxWeek: 30, periods: 16, sessionPeriods: [2, 3, 4, 17], room: "A4-409",
+    });
+    expect(range.message).toContain("periods 2,3,4,17, room A4-409");
+
+    // Overlap: the same edit as the test below; the message describes session 2.
+    const overlap = editableCourses();
+    const group = findGroup(overlap, "CO2007", "L03_L05");
+    group.sessions[0].periods = [8, 9, 10, 11, 12];
+    const [clash] = buildMasks(overlap).warnings;
+    const { sessionPeriods, room } = clash.params as { sessionPeriods: number[]; room: string };
+    expect(clash.message).toContain(`periods ${sessionPeriods.join(",")}, room ${room}`);
+    expect(room).toBe(group.sessions[1].room);
+    // params is a copy: editing it leaves the parsed session alone.
+    sessionPeriods.push(99);
+    expect(group.sessions[1].periods).toEqual([10, 11, 12]);
+  });
+
   it("warns on an internal overlap and still builds the mask", () => {
     const courses = editableCourses();
     // L03_L05: lab Wed 2-6 (weeks 7,9,11,13) and theory Wed 10-12. Move the lab to 8-12.
@@ -344,7 +367,7 @@ describe("robustness", () => {
         groupId: "L03_L05",
         message: expect.stringContaining("internal overlap"),
         code: "internal-overlap",
-        params: { session: 2, other: 1, day: 4 },
+        params: { session: 2, other: 1, day: 4, sessionPeriods: [10, 11, 12], room: group.sessions[1].room },
       },
     ]);
     const mask = result.courses[0].groups.find((g) => g.group.id === "L03_L05")!.mask;

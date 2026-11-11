@@ -118,7 +118,16 @@ function indexGroup(courseCode: string, group: Group, warnings: TimeWarning[]): 
       warn(
         "slots-out-of-range",
         `session ${describe(session)}: ${built.outOfRange} slot(s) outside weeks 1-${MAX_WEEK} / periods 1-${PERIODS} skipped`,
-        { session: index + 1, count: built.outOfRange, day: session.day, maxWeek: MAX_WEEK, periods: PERIODS },
+        {
+          session: index + 1,
+          count: built.outOfRange,
+          day: session.day,
+          maxWeek: MAX_WEEK,
+          periods: PERIODS,
+          // The session itself, as in `describe()`; `periods` above is already the period limit.
+          sessionPeriods: [...session.periods],
+          room: session.room,
+        },
       );
     }
     sessionMasks.forEach((earlier, earlierIndex) => {
@@ -127,6 +136,8 @@ function indexGroup(courseCode: string, group: Group, warnings: TimeWarning[]): 
           session: index + 1,
           other: earlierIndex + 1,
           day: session.day,
+          sessionPeriods: [...session.periods],
+          room: session.room,
         });
       }
     });
