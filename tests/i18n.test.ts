@@ -5,6 +5,7 @@ import {
   label,
   LANG_STORAGE_KEY,
   LANGS,
+  NAME_KEYS,
   readLang,
   setLang,
   setMissingHandler,
@@ -124,6 +125,7 @@ const EXPECTED_KEYS: Record<Exclude<Section, "ui">, readonly (string | number)[]
   partStudy: ["morning", "afternoon"],
   campus: [1, 2],
   kind: ["theory", "lab"],
+  name: NAME_KEYS,
 };
 
 /** Vietnamese is the source of truth for UI keys: English must match them exactly. */
@@ -314,6 +316,7 @@ describe("constraint labels and data values", () => {
 const UI_PARAMS = {
   line: 12,
   n: 3,
+  m: 1,
   prefix: "XYZ",
   from: 1,
   to: 6,
@@ -331,7 +334,7 @@ const UI_PARAMS = {
 };
 
 /** The only Vietnamese UI strings whose own text contains "?". */
-const LITERAL_QUESTION_MARK = new Set(["courses.creditsUnknown", "prefs.timeOfDay.label"]);
+const LITERAL_QUESTION_MARK = new Set(["courses.creditsUnknown", "prefs.block.schedule", "prefs.timeOfDay.label"]);
 
 describe("Vietnamese UI strings", () => {
   const keys = Object.keys(TABLES.vi.ui) as UiKey[];
@@ -370,6 +373,40 @@ describe("Vietnamese UI strings", () => {
   it("states search time in seconds, never as '0 giây'", () => {
     expect(ui("results.stats", { ms: 40 }, "vi")).toBe("Tìm trong chưa đầy 1 giây");
     expect(ui("results.stats", { ms: 2340 }, "vi")).toBe("Tìm trong 2,3 giây");
+  });
+
+  it("labels the two constraint controls with the exact names messages use", () => {
+    expect(ui("prefs.partsOff.label", {}, "vi")).toBe(label("partsOff", "vi"));
+    expect(ui("prefs.freeSeats.label", {}, "vi")).toBe(label("freeSeats", "vi"));
+  });
+
+  it("writes each shared control name once, and every sentence that names it uses that form", () => {
+    const fmt = formatter("vi");
+    expect(fmt.name("lock")).toBe("Chỉ học lớp này");
+    expect(fmt.name("exclude")).toBe("Không học lớp này");
+    expect(fmt.name("preferredSwitch")).toBe("Tính cả các mục “Ưu tiên”");
+    expect(ui("courses.lock", {}, "vi")).toBe(fmt.name("lock"));
+    expect(ui("courses.exclude", {}, "vi")).toBe(fmt.name("exclude"));
+    expect(ui("prefs.preferredSwitch.label", {}, "vi")).toBe(fmt.name("preferredSwitch"));
+    for (const key of ["prefs.mode.preferredTip", "prefs.preferredSwitch.disabledTip"] as UiKey[]) {
+      expect(ui(key, {}, "vi"), key).toContain(fmt.name("preferredSwitch"));
+    }
+    // No other spelling of the switch name survives anywhere in the table.
+    for (const key of Object.keys(TABLES.vi.ui) as UiKey[]) {
+      expect(ui(key, UI_PARAMS, "vi"), key).not.toMatch(/Tính cả các mục Ưu tiên|["'']Tính cả/);
+    }
+  });
+
+  it("never mentions points, since no score is shown", () => {
+    for (const key of Object.keys(TABLES.vi.ui) as UiKey[]) expect(ui(key, UI_PARAMS, "vi"), key).not.toMatch(/điểm/i);
+  });
+
+  it("states what the data lacks, not what the student cannot do, for course-no-program", () => {
+    expect(ui("results.noProgram", { course: "CO2007", program: "L" }, "vi")).toBe("Môn CO2007 không còn lớp nào thuộc chương trình L.");
+  });
+
+  it("counts unknown-credit courses in the partial total", () => {
+    expect(ui("courses.totalCreditsPartial", { n: 9, m: 1 }, "vi")).toBe("Tổng 9 tín chỉ (chưa tính 1 môn)");
   });
 
   it("keeps the mode names identical wherever a sentence refers to them", () => {

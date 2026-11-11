@@ -85,6 +85,12 @@ export function formatter(lang: Lang): Fmt {
       return lookup(lang, form === "long" ? "dayLong" : "dayShort", value) ?? String(value);
     },
     constraint: (value) => label(value, lang),
+    name: (key) => {
+      const own = entry(lang, "name", key);
+      if (own) return own;
+      reportMissing(lang, "name", key);
+      return entry(DEFAULT_LANG, "name", key) || key;
+    },
   };
   return fmt;
 }

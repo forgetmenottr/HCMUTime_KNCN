@@ -9,7 +9,7 @@ const LABELS_AND_VALUES: readonly Section[] = ["constraint", "dayLong", "dayShor
  * change that finishes it; at the end every section of both languages is listed.
  */
 export const COMPLETE: Readonly<Record<Lang, readonly Section[]>> = {
-  // "ui" (stage 3): Vietnamese defines the keys; English follows in stage 5.
-  vi: [...LABELS_AND_VALUES, "ui"],
+  // "name" and "ui" (stage 3): Vietnamese defines the UI keys; English follows in stage 5.
+  vi: [...LABELS_AND_VALUES, "name", "ui"],
   en: [...LABELS_AND_VALUES],
 };

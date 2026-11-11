@@ -37,6 +37,8 @@ export interface Fmt {
   day(value: unknown, form?: "long" | "short"): string;
   /** Label of a constraint name (the name of the control the user sees). */
   constraint(value: unknown): string;
+  /** A shared control name (see NAME_KEYS), exactly as the screen shows it. */
+  name(key: NameKey): string;
 }
 
 /**
@@ -45,6 +47,17 @@ export interface Fmt {
  * lists or a condition. Never assemble a sentence from fragments.
  */
 export type Message = string | ((params: Params, fmt: Fmt) => string);
+
+/**
+ * Names of controls that other sentences refer to: each is written once, in the
+ * `name` section, and every template that mentions the control reads it from
+ * there (`fmt.name`), so the screen and the messages can never drift apart.
+ * - lock / exclude: the two group choices on screen 2, also named by the
+ *   solver messages locked-overlap, conflicts-with-locked and all-excluded;
+ * - preferredSwitch: the "Ưu tiên" switch, named inside two tooltips.
+ */
+export const NAME_KEYS = ["lock", "exclude", "preferredSwitch"] as const;
+export type NameKey = (typeof NAME_KEYS)[number];
 
 /** Half-day keys as the grid and the time-of-day control use them. */
 export type HalfDay = "morning" | "afternoon";
@@ -69,6 +82,8 @@ export interface Dictionary {
   partStudy: Partial<Record<HalfDay, string>>;
   campus: Partial<Record<1 | 2, string>>;
   kind: Partial<Record<"theory" | "lab", string>>;
+  /** Shared control names (NAME_KEYS), reused by UI strings and messages. */
+  name: Partial<Record<NameKey, string>>;
   /** Static UI strings, keyed by screen ("paste.parseButton"). */
   ui: Partial<Record<string, Message>>;
 }

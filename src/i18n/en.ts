@@ -68,5 +68,6 @@ export const en: Dictionary = {
   partStudy,
   campus,
   kind,
+  name: {},
   ui: {},
 };
