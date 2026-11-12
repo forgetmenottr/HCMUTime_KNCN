@@ -1,6 +1,8 @@
-import type { Day } from "../lib/parser";
-import type { ConstraintName } from "../lib/solver";
-import type { Dictionary, HalfDay, Message, NameKey } from "./types";
+import type { Day, ParseWarningCode } from "../lib/parser";
+import type { ConstraintName, SolverDiagnosticCode } from "../lib/solver";
+import type { TimeWarningCode } from "../lib/timing";
+import { blank, clip, groupId, groupKey, ownRequired } from "./helpers";
+import type { Dictionary, Fmt, HalfDay, Message, NameKey, Params } from "./types";
 
 /**
  * Labels for constraint names, as they appear in `violations[].item`,
@@ -69,6 +71,151 @@ const kind = {
   theory: "Lý thuyết",
   lab: "Thực hành",
 } satisfies Record<"theory" | "lab", string>;
+
+/**
+ * Parse warnings, about the pasted data. The reader is fixing their paste:
+ * each message says what is wrong, what happened to the data (skipped or
+ * kept), and what to do. The UI shows "Dòng {line}" in front of each one
+ * (paste.line), so the messages do not repeat the line number.
+ */
+const parse = {
+  "internal-error": (p, f) =>
+    `Ứng dụng gặp lỗi khi đọc dòng này, nên dòng này có thể chưa được đọc đúng. Đây là lỗi của ứng dụng, không phải của dữ liệu bạn dán. (Chi tiết: ${clip(f.str(p.error))})`,
+  "unrecognized-line":
+    "Không đọc được dòng này nên đã bỏ qua. Nếu dòng này không thuộc bảng môn học, bạn không cần làm gì.",
+  "group-before-course":
+    "Nhóm lớp này nằm trước tên môn nên đã bị bỏ qua. Hãy sao chép cả dòng tên môn (dạng “CO2007 - Tên môn”) phía trên bảng nhóm lớp.",
+  "invalid-group-id": (p, f) =>
+    `Mã nhóm lớp “${clip(f.str(p.id), 40)}” không đúng dạng (ví dụ A01 hoặc A01_A01), nên cả nhóm lớp bị bỏ qua.`,
+  "missing-registered-capacity":
+    "Nhóm lớp này thiếu số đã đăng ký / sĩ số (dạng 34/40), nên cả nhóm lớp bị bỏ qua. Hãy sao chép lại môn này.",
+  "missing-language": "Nhóm lớp này thiếu ngôn ngữ giảng dạy (V hoặc TA). Nhóm lớp vẫn được dùng để xếp lịch.",
+  "session-without-group":
+    "Buổi học này không thuộc nhóm lớp nào đọc được nên đã bị bỏ qua. Thường là do dòng nhóm lớp phía trên bị lỗi: hãy sửa dòng đó trước.",
+  // A skipped session leaves its group with one session fewer, so the group can be
+  // picked into a schedule that clashes in reality. Each message says so.
+  "session-no-day":
+    "Buổi học này thiếu thứ, nên bị bỏ qua và nhóm lớp sẽ thiếu buổi này khi xếp lịch. Hãy sao chép lại môn này.",
+  "session-no-room":
+    "Buổi học này thiếu phòng (dạng C5-202), nên bị bỏ qua và nhóm lớp sẽ thiếu buổi này khi xếp lịch. Hãy sao chép lại môn này.",
+  "session-no-weeks":
+    "Buổi học này thiếu chuỗi tuần học, nên bị bỏ qua và nhóm lớp sẽ thiếu buổi này khi xếp lịch. Hãy sao chép lại môn này.",
+  "session-no-periods":
+    "Buổi học này không có tiết nào, nên bị bỏ qua và nhóm lớp sẽ thiếu buổi này khi xếp lịch. Hãy sao chép lại môn này.",
+  // Periods are read from the numbers written on the line, not from their columns (decodePeriods).
+  "period-column-count": (p, f) =>
+    `Phần tiết học có ${f.num(p.found)} cột thay vì ${f.num(p.expected)}. Các tiết vẫn được đọc theo số ghi trên dòng; hãy đối chiếu lại với trang Đăng ký môn học.`,
+  "period-misplaced":
+    "Có số tiết không nằm đúng cột của nó. Các tiết vẫn được đọc theo số ghi trên dòng; hãy đối chiếu lại với trang Đăng ký môn học.",
+  // Weeks are read from the position of each digit, not from the digit (decodeWeeks).
+  "week-digit-mismatch": (p, f) =>
+    `Chuỗi tuần học có chữ số không khớp ở tuần ${f.runs(p.weeks)}; các tuần đã được đọc theo vị trí. Hãy đối chiếu lại với trang Đăng ký môn học.`,
+  "unknown-campus": (p, f) =>
+    blank(p.campus)
+      ? "Buổi học này thiếu cơ sở (1 hoặc 2). Buổi học vẫn được dùng để xếp lịch."
+      : `Cơ sở “${clip(f.str(p.campus), 40)}” không phải 1 hoặc 2. Buổi học vẫn được dùng để xếp lịch.`,
+  // An empty weeks set gives an empty time mask: the session never clashes with anything.
+  "no-teaching-week":
+    "Chuỗi tuần học không có tuần nào, nên buổi học này không được tính khi xếp lịch. Hãy đối chiếu lại với trang Đăng ký môn học.",
+  "no-courses-found": "Không tìm thấy môn học nào trong nội dung đã dán.", // §5
+} satisfies Record<ParseWarningCode, Message>;
+
+/** "Thứ 2, tiết 2–4, phòng A4-409": one session, as the student sees it on screen 2. */
+function session(p: Params, f: Fmt): string {
+  return `${f.day(p.day)}, tiết ${f.runs(p.sessionPeriods)}, phòng ${f.str(p.room)}`;
+}
+
+/**
+ * Timing warnings, about the pasted data, shown on the course or group row of
+ * screen 2 (tooltip title: courses.warningTitle). Course and group come from
+ * the warning itself (`courseCode`, `groupId`). `slots-out-of-range.count`
+ * counts week × period cells, which mean nothing to a student, so it is not shown.
+ */
+const timing = {
+  "duplicate-course": "Môn {courseCode} được dán hơn một lần; ứng dụng dùng bản dán sau cùng.",
+  "duplicate-group": "Nhóm lớp {groupId} của môn {courseCode} xuất hiện hơn một lần; ứng dụng dùng bản sau cùng.",
+  // A cell is dropped when its week or period is out of range (bitIndex); the day is always 2..8.
+  // With every period in range, the cause can only be a week after maxWeek.
+  "slots-out-of-range": (p, f) => {
+    const limit = typeof p.periods === "number" ? p.periods : 16;
+    const periods = Array.isArray(p.sessionPeriods) ? p.sessionPeriods : [];
+    const periodOut = periods.some((n) => typeof n !== "number" || n < 1 || n > limit);
+    return periodOut
+      ? `Buổi ${session(p, f)} có tiết nằm ngoài tiết 1–${f.num(p.periods)}; các tiết đó không được tính khi xếp lịch. Hãy đối chiếu lại với trang Đăng ký môn học.`
+      : `Buổi ${session(p, f)} có tuần học sau tuần ${f.num(p.maxWeek)}; các tuần đó không được tính khi xếp lịch. Hãy đối chiếu lại với trang Đăng ký môn học.`;
+  },
+  // `session` / `other` are positions in the pasted list; "buổi thứ 2" would read like a day name, so they are not shown.
+  "internal-overlap": (p, f) =>
+    `Buổi ${session(p, f)} trùng giờ với một buổi khác của cùng nhóm lớp ${f.str(p.groupId)}. Lịch vẫn được xếp, nhưng hãy đối chiếu lại với trang Đăng ký môn học.`,
+  "group-no-sessions":
+    "Nhóm lớp {groupId} của môn {courseCode} không có buổi học nào đọc được, nên lịch xếp ra có thể không đúng với nhóm này. Hãy sao chép lại môn này.",
+} satisfies Record<TimeWarningCode, Message>;
+
+/**
+ * Solver diagnostics, shown in the result banner. The reader is choosing what
+ * to change in their own settings: each message says what blocked the
+ * schedule and which choice to loosen. Constraint names go through
+ * `fmt.constraint`, lock / exclude through `fmt.name`. Mode names ("Bắt buộc",
+ * "Ưu tiên") are written as on the mode selector (prefs.mode.*); a test checks
+ * that they match. `relaxed.weight` and `truncated.maxNodes` are never shown.
+ */
+const solver = {
+  "no-courses": "Bạn chưa chọn môn nào để xếp lịch. Hãy chọn ít nhất một môn ở bước “Môn và lớp”.",
+  // Internal guard (isConflictFree): a bug, not something the student did.
+  "dropped-conflicting": (p, f) =>
+    `Có ${f.num(p.count)} phương án bị loại vì lần kiểm tra cuối phát hiện trùng giờ. Đây là lỗi của ứng dụng; các phương án được hiển thị vẫn không trùng giờ.`,
+  // `constraints` never contains "programs" here: that one has its own code, course-no-program.
+  "course-blocked": (p, f) =>
+    `Không lớp nào của môn ${f.str(p.course)} đáp ứng ${f.list(p.constraints, f.constraint)} (đang đặt Bắt buộc). Hãy nới bớt lựa chọn, hoặc chuyển sang Ưu tiên.`,
+  // Each constraint alone leaves a group, so at least two are listed, and at least one is the student's own.
+  "course-blocked-combined": (p, f) =>
+    ownRequired(p.constraints).length === 0
+      ? `Không lớp nào của môn ${f.str(p.course)} đáp ứng cùng lúc ${f.list(p.constraints, f.constraint)}.`
+      : `Không lớp nào của môn ${f.str(p.course)} đáp ứng cùng lúc ${f.list(p.constraints, f.constraint)}. Hãy chuyển ${f.list(ownRequired(p.constraints), f.constraint)} sang Ưu tiên.`,
+  "no-combination-required": (p, f) =>
+    ownRequired(p.constraints).length === 0
+      ? "Các lớp thuộc chương trình đào tạo của bạn không ghép được thành lịch nào mà không trùng giờ. Hãy bỏ bớt một môn."
+      : `Không có cách ghép lớp nào vừa không trùng giờ vừa đáp ứng ${f.list(p.constraints, f.constraint)}. Hãy chuyển ${f.list(ownRequired(p.constraints), f.constraint)} sang Ưu tiên, hoặc bỏ bớt một môn.`,
+  // Same words as results.noProgram + results.noProgramWhy, which the result screen shows for this code (A4).
+  "course-no-program": (p, f) =>
+    `Môn ${f.str(p.course)} không còn lớp nào thuộc chương trình ${f.list(p.allowed)}. Môn này chỉ còn lớp của chương trình ${f.list(p.available)}.`,
+  relaxed: (p, f) =>
+    `Không có lịch nào đáp ứng đủ ${f.list(p.constraints, f.constraint)}, nên các phương án dưới đây có thể vi phạm. Chỗ vi phạm được ghi ở từng phương án.`,
+  "course-no-groups":
+    "Môn {course} không có nhóm lớp nào đọc được từ dữ liệu đã dán. Hãy dán lại môn này, hoặc bỏ chọn “Xếp lịch cho môn này”.",
+  "all-excluded": (p, f) =>
+    p.count === 1
+      ? `Môn ${f.str(p.course)} chỉ có một lớp, và bạn đã chọn “${f.name("exclude")}” cho lớp đó. Hãy bỏ lựa chọn đó, hoặc bỏ chọn “Xếp lịch cho môn này”.`
+      : `Bạn đã chọn “${f.name("exclude")}” cho cả ${f.num(p.count)} lớp của môn ${f.str(p.course)}. Hãy bỏ lựa chọn này ở ít nhất một lớp, hoặc bỏ chọn “Xếp lịch cho môn này”.`,
+  "locked-excluded": (p, f) =>
+    `Lớp ${groupId(p.key, f)} của môn ${f.str(p.course)} đang được chọn cả “${f.name("lock")}” lẫn “${f.name("exclude")}”. Hãy bỏ một trong hai.`,
+  "locked-missing": (p, f) =>
+    `Bạn đã chọn “${f.name("lock")}” cho lớp ${groupId(p.key, f)} của môn ${f.str(p.course)}, nhưng dữ liệu đã dán không có lớp này. Hãy chọn lại lớp cho môn này.`,
+  // Every group clashes with *some* locked group, not necessarily with each one.
+  "conflicts-with-locked": (p, f) =>
+    `Lớp nào của môn ${f.str(p.course)} cũng trùng giờ với một lớp bạn đã chọn “${f.name("lock")}”: ${f.list(p.locked, (key) => groupKey(key, f))}. Hãy bỏ lựa chọn đó, hoặc bỏ chọn “Xếp lịch cho môn này” ở môn ${f.str(p.course)}.`,
+  // afterRelax is required.length > 0; the UI always sends programs as required, so it is true in practice.
+  "no-combination": (p, f) =>
+    p.afterRelax === true
+      ? `Không có cách ghép lớp nào mà không trùng giờ, kể cả khi cho phép vi phạm các mục Bắt buộc. Hãy bỏ bớt một môn, hoặc bỏ bớt lựa chọn “${f.name("lock")}” và “${f.name("exclude")}” nếu có.`
+      : `Không có cách ghép lớp nào mà không trùng giờ. Hãy bỏ bớt một môn, hoặc bỏ bớt lựa chọn “${f.name("lock")}” và “${f.name("exclude")}” nếu có.`,
+  // Only emitted when nothing was found. Locking a group shrinks the search, so it is real advice.
+  truncated: (_, f) =>
+    `Tìm kiếm đã dừng sớm trước khi tìm thấy lịch nào, nên vẫn có thể còn lịch hợp lệ. Hãy bỏ bớt một môn, hoặc chọn “${f.name("lock")}” cho vài môn để thu hẹp tìm kiếm.`,
+  // Rebuilt from params.overlap: "Thứ 2, tiết 2–3 (tuần 1–7, 9–16); Chủ nhật, tiết 8–10 (tuần 6, 10, 12, 14)".
+  // Items are joined with "; " because each one already contains commas.
+  "locked-overlap": (p, f) => {
+    const items = Array.isArray(p.overlap) ? p.overlap : [];
+    const when =
+      items.length === 0
+        ? f.str(undefined)
+        : items
+            .map((item: { day?: unknown; periods?: unknown; weeks?: unknown }) =>
+              `${f.day(item?.day)}, tiết ${f.runs(item?.periods)} (tuần ${f.runs(item?.weeks)})`)
+            .join("; ");
+    return `Hai lớp bạn đã chọn “${f.name("lock")}” trùng giờ nhau: ${groupKey(p.a, f)} và ${groupKey(p.b, f)}, vào ${when}. Hãy bỏ lựa chọn ở một trong hai lớp.`;
+  },
+} satisfies Record<SolverDiagnosticCode, Message>;
 
 /**
  * Control names that other sentences quote (see NAME_KEYS). Written once here;
@@ -220,9 +367,9 @@ export type UiKey = keyof typeof ui;
 
 /** Vietnamese (primary language). Sections are filled stage by stage; see status.ts. */
 export const vi: Dictionary = {
-  parse: {},
-  timing: {},
-  solver: {},
+  parse,
+  timing,
+  solver,
   constraint,
   dayLong,
   dayShort,
