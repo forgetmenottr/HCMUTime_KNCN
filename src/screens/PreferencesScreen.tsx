@@ -96,7 +96,7 @@ export function PreferencesScreen({
                 aria-checked={state.preferredSwitch}
                 aria-label={ui("prefs.preferredSwitch.label")}
                 onClick={() => onState({ ...state, preferredSwitch: !state.preferredSwitch })}
-                className={cx("relative h-5 w-9 shrink-0 rounded-full transition-colors", state.preferredSwitch ? "bg-ink" : "bg-line")}
+                className={cx("relative h-5 w-9 shrink-0 rounded-full transition-colors", state.preferredSwitch ? "bg-brand" : "bg-line")}
               >
                 <span className={cx("absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all", state.preferredSwitch ? "left-[18px]" : "left-0.5")} />
               </button>
@@ -246,13 +246,13 @@ function TimeOffGrid({ state, onState }: { state: PreferencesState; onState: (s:
             onClick={() => onState(toggleWholeDay(state, d))}
             className={cx(
               "mb-1 flex h-7 items-center justify-center rounded-md text-[13px] font-bold",
-              s === "all" && "bg-ink text-white hover:bg-ink-2",
-              s === "partial" && "border-[1.5px] border-ink bg-white hover:bg-surface",
+              s === "all" && "bg-brand text-white hover:bg-brand-2",
+              s === "partial" && "border-[1.5px] border-brand bg-white hover:bg-surface",
               s === "none" && "border border-line bg-white hover:border-ink-3 hover:bg-surface",
             )}
           >
             {s === "all" && "✓"}
-            {s === "partial" && <span className="h-0.5 w-3 bg-ink" />}
+            {s === "partial" && <span className="h-0.5 w-3 bg-brand" />}
           </button>
         );
       })}
@@ -283,7 +283,7 @@ function PartRow({ part, ticked, onToggle }: { part: GridPart; ticked: (d: Day) 
           aria-checked={ticked(d)}
           aria-label={`${day(d, "long")}, ${label}`}
           onClick={() => onToggle(d)}
-          className={cx("h-[22px] rounded", ticked(d) ? "bg-ink hover:bg-ink-2" : "border border-line bg-white hover:border-ink-3 hover:bg-surface")}
+          className={cx("h-[22px] rounded", ticked(d) ? "bg-brand hover:bg-brand-2" : "border border-line bg-white hover:border-ink-3 hover:bg-surface")}
         />
       ))}
     </>
@@ -385,7 +385,7 @@ function SliderRow({
           disabled={share.disabled}
           aria-valuetext={share.percent === null ? undefined : ui("prefs.share.aria", { v: share.value, p: share.percent })}
           onChange={(e) => onValue(Number(e.target.value))}
-          className={cx("mt-3 block h-4 w-full", share.disabled ? "accent-line" : "cursor-pointer accent-ink")}
+          className={cx("mt-3 block h-4 w-full", share.disabled ? "accent-line" : "cursor-pointer accent-brand")}
         />
         <div className="mt-1 flex justify-between text-[11px] text-ink-3">
           <span>{low}</span>
