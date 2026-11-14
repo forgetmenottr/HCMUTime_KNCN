@@ -227,6 +227,9 @@ const name = {
   preferredSwitch: "Tính cả các mục “Ưu tiên”",
 } satisfies Record<NameKey, string>;
 
+/** The two end labels shared by all three sliders of block 3, so they can never differ. */
+const SLIDER = { low: "Không quan trọng", high: "Quan trọng" } as const;
+
 /**
  * Static UI strings, in the order a student meets them. Vietnamese is the
  * source of truth for the keys (`UiKey`); the English table must match it.
@@ -306,26 +309,30 @@ const ui = {
   "prefs.partsOff.label": "Ngày/buổi nghỉ", // B2; cùng tên với nhãn ràng buộc partsOff
   "prefs.partsOff.tip": "Ngày, buổi bạn muốn nghỉ. Lớp có tiết rơi vào ô đã chọn bị tính là vi phạm.", // B2
   "prefs.partsOff.wholeDay": "Cả ngày", // B2
-  "prefs.periodRange": "tiết {from}–{to}", // B2 "Sáng (tiết 1–6)"; dùng chung cho lưới và "Bạn thích học buổi nào?"
+  // B2 "Sáng (tiết 1–6)"; dùng chung cho lưới và "Bạn thích học buổi nào?". Nhãn hàng/ô chỉ ghi "Sáng"
+  // hoặc "Chiều" (cột nhãn của lưới chỉ rộng 68px); khoảng tiết nằm trong tooltip: "Sáng (tiết 1–6)".
+  "prefs.periodRange": "tiết {from}–{to}",
 
   // Khối 2: Còn chỗ trống (B2)
   "prefs.freeSeats.label": "Còn chỗ trống", // B2; cùng tên với nhãn ràng buộc freeSeats
   "prefs.freeSeats.tip": "Chỉ chọn lớp còn chỗ. Lớp đã hết chỗ bị tính là vi phạm.", // B2
 
-  // Khối 3: ba thanh trượt (B5); tên lựa chọn Sáng / Chiều nằm ở partStudy
+  // Khối 3: ba thanh trượt (B5); tên lựa chọn Sáng / Chiều nằm ở partStudy.
+  // Hai đầu thanh trượt dùng chung một cặp chữ (quyết định 2026-11-14): chữ "Nhiều" ở thanh
+  // "Đi học ít ngày" sẽ đọc thành "nhiều ngày", ngược với ý nghĩa; hỏi mức quan trọng thì không bị vậy.
   "prefs.timeOfDay.label": "Bạn thích học buổi nào?", // B5
   "prefs.timeOfDay.none": "Không", // B5
-  "prefs.timeOfDay.low": "Không quan trọng", // B5
-  "prefs.timeOfDay.high": "Rất muốn", // B5
+  "prefs.timeOfDay.low": SLIDER.low, // B5
+  "prefs.timeOfDay.high": SLIDER.high, // B5
   "prefs.timeOfDay.tip":
     "Lịch càng có nhiều tiết ngoài buổi bạn chọn càng bị xếp sau. Tiết 13–16 luôn tính là ngoài buổi.", // B5
   "prefs.fewerDays.label": "Đi học ít ngày trong tuần", // B5
-  "prefs.fewerDays.low": "Không quan trọng", // B5
-  "prefs.fewerDays.high": "Càng ít ngày càng tốt", // B5
+  "prefs.fewerDays.low": SLIDER.low, // B5
+  "prefs.fewerDays.high": SLIDER.high, // B5
   "prefs.fewerDays.tip": "Lịch càng phải lên trường nhiều ngày trong tuần càng bị xếp sau.", // B5
   "prefs.avoidEarly.label": "Tránh tiết 1–2", // B5
-  "prefs.avoidEarly.low": "Không quan trọng", // B5
-  "prefs.avoidEarly.high": "Tránh hẳn", // B5
+  "prefs.avoidEarly.low": SLIDER.low, // B5
+  "prefs.avoidEarly.high": SLIDER.high, // B5
   "prefs.avoidEarly.tip": "Lịch càng có nhiều tiết 1–2 càng bị xếp sau.", // B5
 
   // Tỉ trọng (B6)

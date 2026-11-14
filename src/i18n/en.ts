@@ -75,6 +75,9 @@ const MODE = { off: "Off", preferred: "Preferred", required: "Required" } as con
 /** The step that holds the course list; named by the no-courses message. */
 const STEP_COURSES = "Courses and groups";
 
+/** The two end labels shared by all three sliders of the schedule block (as in vi.ts). */
+const SLIDER = { low: "Not important", high: "Important" } as const;
+
 /** The checkbox on each course card; named by several solver messages. */
 const INCLUDE_COURSE = "Include this course";
 
@@ -356,17 +359,17 @@ const ui = {
   // Avoids "Preferred" here: that word is the mode name (see docs/i18n-plan.md 2.7).
   "prefs.timeOfDay.label": "When would you rather study?",
   "prefs.timeOfDay.none": "None",
-  "prefs.timeOfDay.low": "Not important",
-  "prefs.timeOfDay.high": "Strong preference",
+  "prefs.timeOfDay.low": SLIDER.low,
+  "prefs.timeOfDay.high": SLIDER.high,
   "prefs.timeOfDay.tip":
     "The more periods a schedule has outside the half-day you choose, the lower it is ranked. Periods 13–16 always count as outside.",
   "prefs.fewerDays.label": "Fewer days at school each week",
-  "prefs.fewerDays.low": "Not important",
-  "prefs.fewerDays.high": "The fewer days the better",
+  "prefs.fewerDays.low": SLIDER.low,
+  "prefs.fewerDays.high": SLIDER.high,
   "prefs.fewerDays.tip": "The more days a week a schedule has you at school, the lower it is ranked.",
   "prefs.avoidEarly.label": "Avoid periods 1–2",
-  "prefs.avoidEarly.low": "Not important",
-  "prefs.avoidEarly.high": "Avoid completely",
+  "prefs.avoidEarly.low": SLIDER.low,
+  "prefs.avoidEarly.high": SLIDER.high,
   "prefs.avoidEarly.tip": "The more periods 1–2 a schedule has, the lower it is ranked.",
 
   "prefs.share.label": "Share",
