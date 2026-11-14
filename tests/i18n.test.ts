@@ -459,6 +459,16 @@ describe.each(LANGS)("UI strings: shared rules (%s)", (lang) => {
       `${ui("results.noProgram", { course: "SK2001", program: "L" }, lang)} ${ui("results.noProgramWhy", { available: ["A", "CC"] }, lang)}`,
     );
   });
+
+  // The stepper sits inside "Hiển thị {n} phương án" / "Show {n} options" (data-contract.md §5, topK row).
+  // The UI renders the sentence with the live number and splits it at that number, so it must appear exactly once.
+  it("prints the topK number exactly once, so the UI can split the sentence there", () => {
+    const fmt = formatter(lang);
+    for (let n = 1; n <= 10; n++) {
+      const text = ui("prefs.topK", { n }, lang);
+      expect(text.split(fmt.num(n)), `${lang} n=${n}: ${text}`).toHaveLength(2);
+    }
+  });
 });
 
 describe.each(LANGS)("code messages: shared rules (%s)", (lang) => {
@@ -529,7 +539,13 @@ describe("English never shows Vietnamese by accident", () => {
   });
 
   it("keeps the placeholder hint untranslated, identical to the Vietnamese one, until the owner writes it", () => {
-    // When the real sentence exists, write both languages and update this test.
+    // THIS TEST IS DESIGNED TO FAIL, and the failure is not a bug.
+    // `paste.hint` is a placeholder; the owner will replace the Vietnamese sentence. The moment
+    // vi.ts changes, English still holds the old Vietnamese text, so this test goes red. That is
+    // the signal: the English version has not been written yet, and an English reader would
+    // still see Vietnamese. To clear it, write the English sentence in en.ts (agree its meaning
+    // with the owner's Vietnamese). Once both are real, delete this test, because it has done
+    // its job. Do not delete it, or loosen it, to make the failure go away first.
     expect(TABLES.en.ui["paste.hint"]).toBe(TABLES.vi.ui["paste.hint"]);
   });
 

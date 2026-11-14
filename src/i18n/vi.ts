@@ -250,6 +250,8 @@ const ui = {
   "paste.placeholder": "Dán dữ liệu từ trang Đăng ký môn học vào đây",
   // TẠM (PLACEHOLDER): chưa duyệt. Câu này phải tả đúng việc sinh viên làm trên trang
   // Đăng ký môn học, và sẽ do chủ dự án viết lại. Đừng dịch sang tiếng Anh trước khi có bản chính thức.
+  // Khi sửa câu này, test "keeps the placeholder hint untranslated" (tests/i18n.test.ts) sẽ ĐỎ CÓ CHỦ Ý:
+  // bản tiếng Anh ở en.ts chưa được viết. Hãy viết nó, rồi xoá test đó; đừng xoá test trước.
   "paste.hint": "Sao chép thông tin môn cùng bảng nhóm lớp trên trang Đăng ký môn học. Dán được nhiều môn cùng lúc.",
   "paste.parse": "Đọc dữ liệu", // §5 chỉ ghi "Parse"; kế hoạch ghi "Phân tích"
   "paste.warningsTitle": "Một số dòng cần xem lại",
