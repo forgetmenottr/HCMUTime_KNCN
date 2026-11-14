@@ -259,23 +259,35 @@ const ui = {
   "paste.parse": "Đọc dữ liệu", // §5 chỉ ghi "Parse"; kế hoạch ghi "Phân tích"
   "paste.warningsTitle": "Một số dòng cần xem lại",
   "paste.line": "Dòng {line}", // §5 "line N"; không dùng cho line 0 (no-courses-found là cảnh báo cho cả input)
+  // Thêm khi dựng UI (2026-11-14), chữ theo docs/ui-visual-spec.md §11; chủ dự án chưa duyệt từng chữ.
+  "paste.title": "Dữ liệu đăng ký",
+  // Một dòng hướng dẫn cố định, luôn hiện phía trên ô dán. Chủ dự án sẽ sửa câu chữ.
+  "paste.howTo":
+    "Trên trang Đăng ký môn học, mở một môn rồi bôi đen từ dòng thông tin môn (mã môn, tên môn, số tín chỉ) đến hết bảng nhóm lớp của môn đó. Sao chép và dán vào ô bên dưới. Muốn xếp nhiều môn thì dán nối tiếp từng môn.",
+  "paste.statusOk": (p, f) => `Đọc được ${f.num(p.n)} môn`,
+  "paste.clear": "Xoá",
+  "paste.sample": "Thử với dữ liệu mẫu", // điền sẵn ba môn mẫu vào ô dán, cho người chưa có gì để dán
 
   // --- Màn hình 2: Môn và lớp --------------------------------------------------
   "courses.credits": (p, f) => `${f.num(p.n)} TC`, // §5 (theo "? TC")
   "courses.creditsUnknown": "? TC", // §5
   "courses.totalCredits": (p, f) => `Tổng ${f.num(p.n)} tín chỉ`, // §5
   "courses.totalCreditsPartial": (p, f) => `Tổng ${f.num(p.n)} tín chỉ (chưa tính ${f.num(p.m)} môn)`, // §5, khi có môn "? TC"
+  "courses.groupCount": (p, f) => `${f.num(p.n)} nhóm`, // số nhóm lớp của môn, ở hàng đầu card; truyền n là số thật (EN có số ít / số nhiều)
   "courses.colGroup": "Nhóm lớp", // cùng tên cột trong dữ liệu dán vào
   "courses.colSeats": "Đã đăng ký / Sĩ số", // dữ liệu dán vào ghi "DK/ Sĩ số"
   "courses.colProgram": "Chương trình", // chữ đầu của control "Chương trình đào tạo"
+  "courses.colSessions": "Lịch", // tiêu đề cột các buổi học; EN "Class times": từ "schedule" đã dành cho thời khoá biểu
   "courses.full": "Hết chỗ", // kế hoạch ghi "Đầy"; đối với tên "Còn chỗ trống"
   "courses.periods": (p, f) => `Tiết ${f.runs(p.periods)}`,
   "courses.weeks": (p, f) => `Tuần ${f.runs(p.weeks)}`, // §5 "week runs"
   "courses.labTip": "Học cách tuần, nên có lẽ là buổi thực hành.", // đúng với cách parser đoán (detectKind)
   "courses.lock": (_, f) => f.name("lock"), // §5; chữ nằm ở `name`
   "courses.exclude": (_, f) => f.name("exclude"), // §5; chữ nằm ở `name`
+  "courses.lockedChip": (p, f) => `${f.name("lock")}: ${f.str(p.group)}`, // chip ở hàng đầu card; không có chữ mới (§2.2)
   "courses.include": "Xếp lịch cho môn này", // §5 chỉ ghi "Checkbox on the card"
   "courses.warningTitle": "Lịch học cần xem lại", // tiêu đề tooltip của cảnh báo timing
+  "courses.showMore": (p, f) => `Xem thêm ${f.num(p.n)} nhóm`, // link cuối bảng nhóm lớp; truyền n là số thật (EN có số ít / số nhiều)
 
   // --- Màn hình 3: Mong muốn ---------------------------------------------------
   // Tiêu đề ba khối (B1)
@@ -369,6 +381,22 @@ const ui = {
       : `Tìm trong ${f.num(typeof p.ms === "number" ? Math.round(p.ms / 100) / 10 : undefined)} giây`,
   "results.empty": "Bạn chưa chọn môn nào để xếp lịch.",
   "results.solving": "Đang xếp lịch…",
+  // Thêm khi dựng UI (2026-11-14), chữ theo docs/ui-visual-spec.md §11; chủ dự án chưa duyệt từng chữ.
+  "results.relaxedDetails": "Chi tiết",
+  "results.rankHint": "Xếp từ phù hợp nhất →",
+  "results.bestBadge": "Phù hợp nhất",
+  "results.weekAll": "Tất cả",
+  "results.weekByWeek": "Theo tuần",
+  "results.weekPrev": "Tuần trước", // nhãn truy cập của nút ‹
+  "results.weekNext": "Tuần sau", // nhãn truy cập của nút ›
+  "results.legendViolation": "Vi phạm",
+  "results.gridPeriod": "Tiết", // tiêu đề cột số tiết
+  // Worker không chạy được hoặc gặp lỗi (không phải kết quả của solve: solve không bao giờ ném lỗi).
+  "results.workerError": "Bộ xếp lịch gặp lỗi và không chạy được. Hãy thử lại.",
+  "results.retry": "Thử lại",
+  // Mọi phương án tìm được đều lấy lớp của chương trình khác, nên không phương án nào được hiển thị (A4 mở rộng).
+  "results.outsideProgram":
+    "Không có lịch nào chỉ gồm các lớp thuộc chương trình đào tạo của bạn mà vẫn đáp ứng các lựa chọn còn lại. Lịch phải lấy lớp của chương trình khác thì bạn không đăng ký được, nên không được hiển thị.",
 } satisfies Record<string, Message>;
 
 /** Every static UI key; `ui(key)` only accepts these. */

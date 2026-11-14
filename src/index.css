@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens from docs/ui-visual-spec.md §0.3–0.4. The drawing is monochrome:
+ * importance is shown by how dark something is, not by hue.
+ * Fonts: a system stack (decided for the demo). The two drawn families come first,
+ * so they are used on a machine that happens to have them installed.
+ */
+@theme {
+  --font-sans: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-ink: #1e1e1e; /* main text, selected state, primary button */
+  --color-ink-2: #444444; /* secondary text */
+  --color-ink-3: #757575; /* tertiary text, unselected items */
+  --color-line: #b3b3b3; /* control borders, dimmed items */
+  --color-off: #c4c4c4; /* text of a disabled choice */
+  --color-card: #d9d9d9; /* card borders, theory blocks, disabled button */
+  --color-rule: #eeeeee; /* row dividers */
+  --color-surface: #f5f5f5; /* banners, warning boxes, locked rows */
+}
+
+html {
+  color: var(--color-ink);
+  background: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+body {
+  margin: 0;
+  /* Desktop only: below the drawn content width the page scrolls sideways instead of reflowing. */
+  min-width: 1000px;
+}
+
+button:not(:disabled),
+[role="tab"],
+[role="switch"],
+[role="checkbox"],
+[role="radio"],
+summary {
+  cursor: pointer;
+}
+
+/* Focus must be visible (spec §0.7): one dark outline for every control. */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

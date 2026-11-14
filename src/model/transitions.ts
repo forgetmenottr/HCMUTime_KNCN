@@ -14,6 +14,25 @@ import { GRID_DAYS, GRID_PARTS, validCells, type GridCell, type PreferencesState
 /** The mode a first tick switches the grid to (decided 2026-11-14; docs/ui-change-analysis.md B2). */
 export const FIRST_TICK_MODE: Mode = "required";
 
+/** The weight the time-of-day slider jumps to when a half-day is first chosen (docs/ui-change-analysis.md B5). */
+export const FIRST_CHOICE_WEIGHT = 5;
+
+/**
+ * The Sáng / Chiều / Không choice of "Bạn thích học buổi nào?" (B5).
+ *
+ * **Leaving "Không" with the slider at 0 sets it to 5.** The default weight is 0,
+ * so without this, choosing "Sáng" would do nothing and the student could not
+ * tell why. Going back to "Không" keeps the slider's value, so choosing a
+ * half-day again restores it.
+ */
+export function setTimeOfDay(state: PreferencesState, prefer: PreferencesState["timeOfDay"]["prefer"]): PreferencesState {
+  const next = prefer === "morning" || prefer === "afternoon" ? prefer : "none";
+  const was = state.timeOfDay.prefer;
+  const leavingNone = was !== "morning" && was !== "afternoon" && next !== "none";
+  const weight = leavingNone && !(state.timeOfDay.weight > 0) ? FIRST_CHOICE_WEIGHT : state.timeOfDay.weight;
+  return { ...state, timeOfDay: { prefer: next, weight } };
+}
+
 /** State of a day's "Cả ngày" cell: derived from Sáng and Chiều, never stored. */
 export type DayState = "none" | "partial" | "all";
 

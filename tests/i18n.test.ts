@@ -338,6 +338,7 @@ const UI_PARAMS = {
   periods: [2, 3, 4],
   weeks: [1, 2, 3, 5],
   ms: 2340,
+  group: "L01_L01",
 };
 
 /** The only UI strings whose own text contains "?"; the same three keys in every language. */

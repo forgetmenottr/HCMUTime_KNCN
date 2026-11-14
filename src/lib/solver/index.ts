@@ -5,3 +5,4 @@ export * from "./score";
 export * from "./equivalence";
 export * from "./search";
 export * from "./solve";
+export * from "./protocol";

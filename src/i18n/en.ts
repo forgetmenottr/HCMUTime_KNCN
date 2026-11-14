@@ -306,6 +306,13 @@ const ui = {
   "paste.parse": "Read data",
   "paste.warningsTitle": "Some lines need a second look",
   "paste.line": "Line {line}", // not used for line 0 (no-courses-found is a warning about the whole input)
+  // Added while building the UI (2026-11-14); English from docs/ui-visual-spec.md §11 suggestions, not yet approved one by one.
+  "paste.title": "Registration data",
+  // One static line of guidance, always shown above the paste box. The owner will revise the wording.
+  "paste.howTo": `On ${REGISTRATION_PAGE}, open a course and select from its course information row (code, name, credits) to the end of its group table. Copy it and paste it into the box below. To schedule several courses, paste them one after another.`,
+  "paste.statusOk": (p, f) => f.plural(p.n, { one: "Read # course", other: "Read # courses" }),
+  "paste.clear": "Clear",
+  "paste.sample": "Try with sample data", // fills the paste box with three sample courses
 
   // --- Screen 2: Courses and groups ----------------------------------------------
   "courses.credits": (p, f) => f.plural(p.n, { one: "# credit", other: "# credits" }),
@@ -313,17 +320,23 @@ const ui = {
   "courses.totalCredits": (p, f) => f.plural(p.n, TOTAL_CREDITS),
   "courses.totalCreditsPartial": (p, f) =>
     `${f.plural(p.n, TOTAL_CREDITS)} (${f.plural(p.m, { one: "not counting # course", other: "not counting # courses" })})`,
+  // Singular at n = 1, plural for everything else, 0 included (Intl.PluralRules).
+  "courses.groupCount": (p, f) => f.plural(p.n, { one: "# group", other: "# groups" }),
   "courses.colGroup": "Group",
   "courses.colSeats": "Registered / Capacity",
   "courses.colProgram": "Program",
+  // "Class times", not "Schedule": "schedule" already means the timetable itself (courses.warningTitle, prefs.*, results.*).
+  "courses.colSessions": "Class times",
   "courses.full": "Full",
   "courses.periods": (p, f) => runsOf(f, p.periods, "Period", "Periods"),
   "courses.weeks": (p, f) => runsOf(f, p.weeks, "Week", "Weeks"),
   "courses.labTip": "Meets every other week, so it is probably a lab session.",
   "courses.lock": (_, f) => f.name("lock"), // the text lives in `name`
   "courses.exclude": (_, f) => f.name("exclude"), // the text lives in `name`
+  "courses.lockedChip": (p, f) => `${f.name("lock")}: ${f.str(p.group)}`, // chip on the card header; no new words
   "courses.include": INCLUDE_COURSE,
   "courses.warningTitle": "Class times need a second look",
+  "courses.showMore": (p, f) => f.plural(p.n, { one: "Show # more group", other: "Show # more groups" }),
 
   // --- Screen 3: Preferences -----------------------------------------------------
   "prefs.block.program": constraint.programs, // the block title is the control's name
@@ -407,6 +420,22 @@ const ui = {
         }),
   "results.empty": "You haven’t chosen any course to schedule.",
   "results.solving": "Building schedule…",
+  // Added while building the UI (2026-11-14); English from docs/ui-visual-spec.md §11 suggestions, not yet approved one by one.
+  "results.relaxedDetails": "Details",
+  "results.rankHint": "Best first →",
+  "results.bestBadge": "Best match",
+  "results.weekAll": "All weeks",
+  "results.weekByWeek": "By week",
+  "results.weekPrev": "Previous week",
+  "results.weekNext": "Next week",
+  "results.legendViolation": "Violation",
+  "results.gridPeriod": "Period",
+  // The worker failed to start or crashed (not a result of solve, which never throws).
+  "results.workerError": "The scheduler hit an error and could not run. Please try again.",
+  "results.retry": "Try again",
+  // Every schedule found needed a group from another program, so none is shown (A4, generalised).
+  "results.outsideProgram":
+    "No schedule uses only groups in your study program and still meets your other choices. A schedule that needs a group from another program cannot be registered, so none is shown.",
 } satisfies Record<UiKey, Message>;
 
 /** English (second language). Every section is complete; see status.ts. */
