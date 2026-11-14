@@ -93,7 +93,7 @@ export function PasteScreen({
         spellCheck={false}
         wrap="off"
         style={{ lineHeight: `${LINE_HEIGHT}px` }}
-        className="mt-3 block h-[300px] w-full resize-y rounded-lg border border-line p-4 font-mono text-[12px] whitespace-pre text-ink-2 placeholder:font-sans placeholder:text-[14px] placeholder:text-line focus:border-ink"
+        className="mt-3 block h-[300px] w-full resize-y rounded-lg border border-line p-4 font-mono text-[12px] whitespace-pre text-ink-2 placeholder:font-sans placeholder:text-[14px] placeholder:text-ink-3 focus:border-brand"
       />
 
       {/* One live region, so the outcome of a paste is announced as well as shown. */}

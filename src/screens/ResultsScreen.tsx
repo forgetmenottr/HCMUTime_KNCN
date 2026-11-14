@@ -54,7 +54,7 @@ export function ResultsScreen({
     return (
       <Centered>
         <div role="status" className="flex items-center gap-3 text-[18px] font-semibold" data-testid="solving">
-          <span aria-hidden className="h-5 w-5 rounded-full border-2 border-card border-t-ink" style={{ animation: "spin 0.8s linear infinite" }} />
+          <span aria-hidden className="h-5 w-5 rounded-full border-2 border-card border-t-brand" style={{ animation: "spin 0.8s linear infinite" }} />
           {ui("results.solving")}
         </div>
         <Button onClick={onCancel}>
@@ -194,7 +194,7 @@ function Schedules({ view, onBack }: { view: SchedulesView; onBack: () => void }
       {view.relaxed ? (
         <div className="mb-5 rounded-lg border border-line bg-surface px-4 py-2.5" data-testid="relaxed-banner">
           <div className="flex items-center gap-3">
-            <span aria-hidden className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-ink-3 text-[12px] font-bold text-white">!</span>
+            <span aria-hidden className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-warn text-[12px] font-bold text-white">!</span>
             <span className="flex-1 text-[14px] font-medium">{ui("results.relaxedTitle")}</span>
             <button type="button" aria-expanded={detailsOpen} onClick={() => setDetailsOpen((o) => !o)} className="text-[13px] underline underline-offset-2 hover:text-ink-3">
               {ui("results.relaxedDetails")}
@@ -223,11 +223,11 @@ function Schedules({ view, onBack }: { view: SchedulesView; onBack: () => void }
             role="tab"
             aria-selected={i === selected}
             onClick={() => select(i)}
-            className={cx("-mb-px flex flex-col items-start gap-1 self-stretch border-b-2 px-4 pt-2 pb-2.5 text-left", i === selected ? "border-ink" : "border-transparent hover:bg-surface")}
+            className={cx("-mb-px flex flex-col items-start gap-1 self-stretch border-b-2 px-4 pt-2 pb-2.5 text-left", i === selected ? "border-brand" : "border-transparent hover:bg-surface")}
           >
             <span className="flex items-center gap-2">
-              <span className={cx("text-[14px] whitespace-nowrap", i === selected ? "font-semibold text-ink" : "text-ink-3")}>{ui("results.option", { n: o.n })}</span>
-              {o.best && <Badge tone="solid">{ui("results.bestBadge")}</Badge>}
+              <span className={cx("text-[14px] whitespace-nowrap", i === selected ? "font-semibold text-brand" : "text-ink-3")}>{ui("results.option", { n: o.n })}</span>
+              {o.best && <Badge tone="accent">{ui("results.bestBadge")}</Badge>}
               {o.tie && <Badge>{ui("results.tie")}</Badge>}
             </span>
             {/* One chip per broken constraint; the chip is one translated string (§4.3). */}
@@ -281,7 +281,7 @@ function Schedules({ view, onBack }: { view: SchedulesView; onBack: () => void }
                 {kindLabel("lab")}
               </span>
               <span className="flex items-center gap-1.5">
-                <span aria-hidden className="h-3.5 w-3.5 rounded-[3px] border-2 border-ink bg-card" />
+                <span aria-hidden className="h-3.5 w-3.5 rounded-[3px] border-2 border-warn bg-card" />
                 {ui("results.legendViolation")}
               </span>
             </div>
@@ -382,7 +382,7 @@ function Block({ block }: { block: GridBlock }) {
   const frame = cx(
     "z-10 m-0.5 overflow-hidden rounded-md px-1.5 py-1 font-mono text-[12px] leading-[15px]",
     dashed ? "border-dashed bg-white" : "bg-card",
-    violating ? "border-2 border-ink" : "border border-ink-3",
+    violating ? "border-2 border-warn" : "border border-ink-3",
   );
 
   if (!block.alternating) {

@@ -27,7 +27,7 @@ export function Button({
       className={cx(
         "inline-flex h-10 items-center justify-center gap-1 rounded-md px-4 text-[14px] font-medium whitespace-nowrap",
         variant === "primary"
-          ? "bg-ink text-white hover:bg-ink-2 disabled:bg-card disabled:text-white"
+          ? "bg-accent font-semibold text-brand hover:bg-accent-2 disabled:bg-card disabled:font-medium disabled:text-white"
           : "border border-line bg-white text-ink hover:bg-surface disabled:border-card disabled:text-off",
         className,
       )}
@@ -98,7 +98,7 @@ export function Help({ text, align }: { text: string; align?: "center" | "start"
       <button
         type="button"
         aria-label={text}
-        className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-line text-[10px] leading-none font-semibold text-ink-3 hover:border-ink hover:text-ink"
+        className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-line text-[10px] leading-none font-semibold text-ink-3 hover:border-brand hover:text-brand"
       >
         ?
       </button>
@@ -163,7 +163,7 @@ export function Segmented<T extends string>({
                 i === 0 && "rounded-l-[5px]",
                 i === options.length - 1 && "rounded-r-[5px]",
                 i > 0 && "border-l border-line",
-                selected && !off && "bg-ink font-semibold text-white",
+                selected && !off && "bg-brand font-semibold text-white",
                 selected && off && "bg-card font-semibold text-white",
                 !selected && off && "cursor-not-allowed bg-[#f2f2f2] text-off",
                 !selected && !off && (option.dim ? "text-line hover:bg-surface" : "text-ink-3 hover:bg-surface hover:text-ink"),
@@ -182,14 +182,14 @@ export function Segmented<T extends string>({
 // Round status marks used by several screens
 // ---------------------------------------------------------------------------
 
-export function Badge({ children, tone = "outline" }: { children: ReactNode; tone?: "outline" | "solid" | "dashed" }) {
+export function Badge({ children, tone = "outline" }: { children: ReactNode; tone?: "outline" | "accent" | "dashed" }) {
   return (
     <span
       className={cx(
         "inline-flex items-center rounded-full px-2 py-px text-[11px] font-medium whitespace-nowrap",
-        tone === "solid" && "bg-ink text-white",
+        tone === "accent" && "bg-accent font-semibold text-brand",
         tone === "outline" && "border border-line text-ink-2",
-        tone === "dashed" && "border border-dashed border-ink-3 text-ink-2",
+        tone === "dashed" && "border border-dashed border-warn text-warn",
       )}
     >
       {children}
@@ -203,7 +203,7 @@ export function Glyph({ kind, size = 16 }: { kind: "ok" | "warn" | "fail"; size?
     <span
       aria-hidden
       style={{ width: size, height: size, fontSize: Math.round(size * 0.65) }}
-      className={cx("inline-flex shrink-0 items-center justify-center bg-ink leading-none font-bold text-white", kind === "ok" ? "rounded-[3px]" : "rounded-full")}
+      className={cx("inline-flex shrink-0 items-center justify-center leading-none font-bold text-white", kind === "ok" ? "rounded-[3px] bg-brand" : "rounded-full bg-warn")}
     >
       {kind === "ok" ? "✓" : kind === "warn" ? "!" : "×"}
     </span>

@@ -147,17 +147,20 @@ export default function App({ solver, storage }: AppProps) {
   };
 
   return (
-    <div className="min-h-screen bg-white text-ink">
-      <header className="flex h-16 items-center justify-between border-b border-card px-10">
-        <div className="text-[20px] font-bold tracking-tight">HCMUTIME</div>
+    <div className="flex min-h-screen flex-col bg-white text-ink">
+      <header className="flex h-16 shrink-0 items-center justify-between bg-brand px-10 text-white">
+        <div className="flex items-center gap-2.5 text-[20px] font-bold tracking-tight">
+          <Mark />
+          HCMUTIME
+        </div>
         <div className="flex items-center gap-4">
           <Stepper current={step} canOpen={canOpen} onOpen={go} />
-          <span aria-hidden className="h-5 w-px bg-card" />
+          <span aria-hidden className="h-5 w-px bg-white/25" />
           <LangSwitch lang={lang} onChange={setLang} />
         </div>
       </header>
 
-      <main className={step === "results" ? "px-10 py-8" : "mx-auto w-[880px] py-8"} data-step={step}>
+      <main className={(step === "results" ? "px-10 py-8" : "mx-auto w-[880px] py-8") + " flex-1"} data-step={step}>
         {step === "paste" && (
           <PasteScreen text={text} onText={editText} parsed={parsed} courses={built.courses} onNext={() => go("courses")} />
         )}
@@ -198,7 +201,31 @@ export default function App({ solver, storage }: AppProps) {
           />
         )}
       </main>
+
+      {/*
+        Do not remove. The app wears the university's colours and reads its registration
+        data; without this line a student could take it for an official tool and blame the
+        university when a timetable is wrong.
+      */}
+      <footer className="shrink-0 border-t border-rule px-10 py-4 text-center text-[12px] text-ink-3">{ui("footer.disclaimer")}</footer>
     </div>
+  );
+}
+
+/**
+ * The app's own mark (not the university's logo): three class blocks on a
+ * timetable tile. public/favicon.svg is the same drawing, navy tile and white blocks.
+ */
+function Mark() {
+  return (
+    <svg aria-hidden width="26" height="26" viewBox="0 0 32 32" className="shrink-0">
+      <rect width="32" height="32" rx="7" fill="#ffffff" />
+      <g className="fill-brand">
+        <rect x="6" y="7" width="5" height="11" rx="1.5" />
+        <rect x="13.5" y="12" width="5" height="13" rx="1.5" />
+        <rect x="21" y="7" width="5" height="7" rx="1.5" />
+      </g>
+    </svg>
   );
 }
 
@@ -215,7 +242,7 @@ function Stepper({ current, canOpen, onOpen }: { current: Step; canOpen: (s: Ste
           const enabled = canOpen(s);
           return (
             <li key={s} className="flex items-center">
-              {i > 0 && <span aria-hidden className="h-px w-4 bg-card" />}
+              {i > 0 && <span aria-hidden className="h-px w-4 bg-white/25" />}
               <button
                 type="button"
                 disabled={!enabled}
@@ -223,17 +250,18 @@ function Stepper({ current, canOpen, onOpen }: { current: Step; canOpen: (s: Ste
                 onClick={() => onOpen(s)}
                 className={
                   "flex items-center gap-2 rounded-full py-1 pl-1 pr-3 text-[13px] whitespace-nowrap " +
+                  // The header is navy, so the active step is the inverse: a white pill with navy text.
                   (active
-                    ? "bg-ink font-semibold text-white"
+                    ? "bg-white font-semibold text-brand"
                     : enabled
-                      ? "bg-surface text-ink-3 hover:bg-rule hover:text-ink"
-                      : "bg-surface text-off")
+                      ? "bg-white/10 text-white/85 hover:bg-white/20 hover:text-white"
+                      : "text-white/45")
                 }
               >
                 <span
                   className={
                     "flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold " +
-                    (active ? "bg-white text-ink" : enabled ? "bg-line text-white" : "bg-card text-white")
+                    (active ? "bg-brand text-white" : enabled ? "bg-white/25 text-white" : "border border-white/45 text-white/45")
                   }
                 >
                   {i + 1}
@@ -257,11 +285,11 @@ const LANG_CHOICES = [
 function LangSwitch({ lang, onChange }: { lang: string; onChange: (lang: "vi" | "en") => void }) {
   return (
     <div className="flex items-center gap-2" role="group" aria-label={ui("lang.switch")}>
-      <svg aria-hidden width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="text-ink-3">
+      <svg aria-hidden width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="text-white/85">
         <circle cx="8" cy="8" r="6.5" />
         <path d="M1.5 8h13M8 1.5c2 2 2.8 4.2 2.8 6.5S10 12.5 8 14.5C6 12.5 5.2 10.3 5.2 8S6 3.500 8 1.5z" />
       </svg>
-      <div className="flex overflow-hidden rounded border border-line text-[11px]">
+      <div className="flex overflow-hidden rounded border border-white/45 text-[11px]">
         {LANG_CHOICES.map((choice) => (
           <button
             key={choice.code}
@@ -271,7 +299,7 @@ function LangSwitch({ lang, onChange }: { lang: string; onChange: (lang: "vi" | 
             aria-label={choice.name}
             aria-pressed={lang === choice.code}
             onClick={() => onChange(choice.code)}
-            className={"px-2 py-1 font-semibold " + (lang === choice.code ? "bg-ink text-white" : "text-ink-3 hover:bg-surface")}
+            className={"px-2 py-1 font-semibold " + (lang === choice.code ? "bg-white text-brand" : "text-white/85 hover:bg-white/15")}
           >
             {choice.short}
           </button>

@@ -107,7 +107,7 @@ function WarningMark({ warnings }: { warnings: readonly TimeWarning[] }) {
   const text = `${ui("courses.warningTitle")}: ${warnings.map((w) => translate("timing", w)).join(" ")}`;
   return (
     <Tooltip text={text} align="start">
-      <span tabIndex={0} role="img" aria-label={text} className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-ink-3 text-[11px] font-bold text-white">
+      <span tabIndex={0} role="img" aria-label={text} className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-warn text-[11px] font-bold text-white">
         !
       </span>
     </Tooltip>
@@ -141,7 +141,7 @@ function CourseCard({
   const hidden = course.groups.length - visible.length;
 
   return (
-    <div className={cx("rounded-lg border bg-white", open ? "border-ink" : "border-card")} data-course={course.code}>
+    <div className={cx("rounded-lg border bg-white", open ? "border-brand" : "border-card")} data-course={course.code}>
       <div className={cx("flex items-center gap-3 px-4", open && "border-b border-rule")}>
         <input
           type="checkbox"
@@ -149,7 +149,7 @@ function CourseCard({
           onChange={() => onChoices(toggleCourse(choices, course.code))}
           aria-label={`${ui("courses.include")}: ${course.code}`}
           title={ui("courses.include")}
-          className="h-4 w-4 shrink-0 cursor-pointer accent-ink"
+          className="h-4 w-4 shrink-0 cursor-pointer accent-brand"
         />
         <button
           type="button"
@@ -160,7 +160,7 @@ function CourseCard({
           <span className="font-mono text-[14px] font-bold">{course.code}</span>
           <span className="min-w-0 flex-1 truncate text-[14px] text-ink-2">{course.name}</span>
           {lockedGroup && included && (
-            <span className="rounded-full border border-ink px-2 py-px text-[11px] font-medium whitespace-nowrap">
+            <span className="rounded-full border border-brand px-2 py-px text-[11px] font-medium whitespace-nowrap">
               {ui("courses.lockedChip", { group: lockedGroup.group.id })}
             </span>
           )}
@@ -254,9 +254,9 @@ function GroupRow({
           aria-label={ui("courses.lock")}
           title={ui("courses.lock")}
           onClick={() => onChoices(toggleLock(choices, course.code, g.id))}
-          className={cx("flex h-4 w-4 items-center justify-center rounded-full border bg-white hover:border-ink", locked ? "border-ink" : "border-line")}
+          className={cx("flex h-4 w-4 items-center justify-center rounded-full border bg-white hover:border-brand", locked ? "border-brand" : "border-line")}
         >
-          {locked && <span className="h-2 w-2 rounded-full bg-ink" />}
+          {locked && <span className="h-2 w-2 rounded-full bg-brand" />}
         </button>
       </div>
       <div className="flex justify-center pt-px">
@@ -266,7 +266,7 @@ function GroupRow({
           onChange={() => onChoices(toggleExclude(choices, course.code, g.id))}
           aria-label={ui("courses.exclude")}
           title={ui("courses.exclude")}
-          className="h-4 w-4 cursor-pointer accent-ink"
+          className="h-4 w-4 cursor-pointer accent-brand"
         />
       </div>
     </div>

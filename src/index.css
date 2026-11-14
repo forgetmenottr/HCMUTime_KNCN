@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 /*
- * Design tokens from docs/ui-visual-spec.md §0.3–0.4. The drawing is monochrome:
- * importance is shown by how dark something is, not by hue.
+ * Design tokens. The layout follows docs/ui-visual-spec.md §0.3–0.4 (drawn in
+ * greys); the colours follow the slide deck: navy is the primary, amber the accent.
+ *
+ * Rules the tokens cannot enforce:
+ * - Amber (`accent`) appears AT MOST ONCE per screen: the forward action, or the
+ *   "best" tab on the results. It only works while it is rare.
+ * - Warnings and violations are `warn` (red), never amber, so they cannot be
+ *   mistaken for the brand accent.
+ * - Text on amber is navy (6.5:1); white on amber is 2:1 and must not be used.
+ *
  * Fonts: a system stack (decided for the demo). The two drawn families come first,
  * so they are used on a machine that happens to have them installed.
  */
@@ -10,10 +18,18 @@
   --font-sans: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, "SF Mono", Menlo, monospace;
 
-  --color-ink: #1e1e1e; /* main text, selected state, primary button */
+  /* Brand */
+  --color-brand: #0b2d6e; /* navy: header, selected state, focus ring (white on it 13:1) */
+  --color-brand-2: #1a4496; /* navy, hover */
+  --color-accent: #f5a800; /* amber: once per screen, with navy text */
+  --color-accent-2: #ffbb1f; /* amber, hover */
+  --color-warn: #b42318; /* warnings and violations (6.6:1 on white) */
+
+  /* Neutrals */
+  --color-ink: #1e1e1e; /* main text, tooltips */
   --color-ink-2: #444444; /* secondary text */
-  --color-ink-3: #757575; /* tertiary text, unselected items */
-  --color-line: #b3b3b3; /* control borders, dimmed items */
+  --color-ink-3: #6b6b6b; /* tertiary text, unselected items (4.9:1 on surface; #757575 was 4.2:1) */
+  --color-line: #8c8c8c; /* control borders, dimmed items (3.4:1 on white; #b3b3b3 was 2.1:1) */
   --color-off: #c4c4c4; /* text of a disabled choice */
   --color-card: #d9d9d9; /* card borders, theory blocks, disabled button */
   --color-rule: #eeeeee; /* row dividers */
@@ -42,10 +58,14 @@ summary {
   cursor: pointer;
 }
 
-/* Focus must be visible (spec §0.7): one dark outline for every control. */
+/* Focus must be visible (spec §0.7): one navy outline for every control, white inside the navy header. */
 :focus-visible {
-  outline: 2px solid var(--color-ink);
+  outline: 2px solid var(--color-brand);
   outline-offset: 2px;
+}
+
+header :focus-visible {
+  outline-color: #ffffff;
 }
 
 @keyframes spin {

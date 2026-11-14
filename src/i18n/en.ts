@@ -297,6 +297,9 @@ const ui = {
   "nav.back": "Back",
   "nav.next": "Continue",
   "lang.switch": "Language", // ARIA label; the two choices "Tiếng Việt" / "English" are never translated
+  // Footer, every screen. DO NOT REMOVE: the app uses the university's colours and reads its registration
+  // data; without this line a student could take it for an official tool and blame the university for a wrong timetable.
+  "footer.disclaimer": "A student course project. Not an official university product.",
 
   // --- Screen 1: Paste data ------------------------------------------------------
   "paste.placeholder": `Paste the data from ${REGISTRATION_PAGE} here`,

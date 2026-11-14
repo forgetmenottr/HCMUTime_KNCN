@@ -248,6 +248,9 @@ const ui = {
   "nav.back": "Quay lại",
   "nav.next": "Tiếp tục",
   "lang.switch": "Ngôn ngữ", // nhãn ARIA; hai lựa chọn "Tiếng Việt" / "English" không dịch
+  // Chân trang, mọi màn hình. ĐỪNG XOÁ: ứng dụng dùng màu của trường và đọc dữ liệu đăng ký của trường;
+  // thiếu dòng này, sinh viên có thể tưởng đây là công cụ chính thức và trách trường khi lịch sai.
+  "footer.disclaimer": "Đồ án môn học của sinh viên. Không phải sản phẩm chính thức của trường.",
 
   // --- Màn hình 1: Dán dữ liệu -------------------------------------------------
   "paste.placeholder": "Dán dữ liệu từ trang Đăng ký môn học vào đây",
